@@ -1,7 +1,7 @@
 name: Deploy Ghazaal Cloud PC
 on:
   push:
-    branches: [main, feat/cloud-desktop-v1]
+    branches: [main, feat/cloud-desktop-v1, feat/cloud-desktop-v2]
   workflow_dispatch:
 permissions:
   contents: read
