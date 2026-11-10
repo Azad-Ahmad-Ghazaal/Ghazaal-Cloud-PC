@@ -1,0 +1,28 @@
+name: Windows Runner Check
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, feat/desktop-v1]
+permissions:
+  contents: read
+jobs:
+  validate-on-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Confirm Windows runner
+        shell: pwsh
+        run: |
+          Write-Host "Ghazaal Cloud PC validation runner"
+          Get-ComputerInfo | Select-Object WindowsProductName, WindowsVersion, OsArchitecture
+          if ($env:RUNNER_OS -ne "Windows") { throw "Expected Windows runner" }
+      - name: Check required project files
+        shell: pwsh
+        run: |
+          $required = @("index.html", "README.md", "setup/windows-setup.ps1")
+          foreach ($file in $required) {
+            if (-not (Test-Path $file)) { throw "Missing file: $file" }
+          }
+          $html = Get-Content "index.html" -Raw
+          if ($html -notmatch "Ghazaal Cloud PC") { throw "Desktop title missing" }
+          Write-Host "Project checks passed."
