@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#101827">
+  <meta name="description" content="Ghazaal Cloud PC — a browser-based personal workspace powered by GitHub.">
+  <title>Ghazaal Cloud PC</title><link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main id="desktop" class="desktop">
+    <div class="wallpaper-glow"></div>
+    <section class="desktop-icons" aria-label="Desktop shortcuts">
+      <button class="desktop-icon" data-open="computer"><span class="desk-symbol">▣</span><span>This PC</span></button>
+      <button class="desktop-icon" data-open="files"><span class="desk-symbol folder-symbol">▰</span><span>File Explorer</span></button>
+      <button class="desktop-icon" data-open="browser"><span class="desk-symbol browser-symbol">◎</span><span>Browser</span></button>
+      <button class="desktop-icon" data-open="terminal"><span class="desk-symbol terminal-symbol">›_</span><span>Terminal</span></button>
+      <button class="desktop-icon" data-open="about"><span class="desk-symbol info-symbol">ⓘ</span><span>About</span></button>
+    </section>
+    <section id="windowLayer" class="window-layer" aria-live="polite"></section>
+    <section id="startMenu" class="start-menu hidden">
+      <div class="start-search"><span>⌕</span><input id="startSearch" placeholder="Search apps, settings and documents" autocomplete="off"></div>
+      <div class="start-heading"><strong>Pinned</strong><span>All apps　›</span></div>
+      <div class="pinned-grid">
+        <button data-open="files"><i class="app-icon yellow">▰</i>File Explorer</button>
+        <button data-open="browser"><i class="app-icon blue">◎</i>Browser</button>
+        <button data-open="terminal"><i class="app-icon dark">›_</i>Terminal</button>
+        <button data-open="computer"><i class="app-icon teal">▣</i>This PC</button>
+        <button data-open="settings"><i class="app-icon slate">⚙</i>Settings</button>
+        <button data-open="about"><i class="app-icon violet">ⓘ</i>About</button>
+      </div>
+      <div class="start-footer"><span>◉　Ghazaal Workspace</span><button id="powerButton" title="Power menu">⏻</button></div>
+    </section>
+    <section id="quickPanel" class="quick-panel hidden">
+      <div class="quick-grid"><button>◉ Wi-Fi <small>Connected</small></button><button>◈ Bluetooth <small>On</small></button><button>◐ Battery <small>Browser device</small></button><button>☾ Focus <small>Off</small></button></div>
+      <div class="brightness"><span>☼</span><input type="range" min="35" max="100" value="90" id="brightness"></div>
+      <div class="quick-bottom"><span>Notifications</span><button id="clearNotifications">Clear</button></div>
+      <p class="muted" id="notificationText">You're all caught up.</p>
+    </section>
+    <nav class="taskbar">
+      <div class="taskbar-left"><button id="startButton" class="task-button start-button" aria-label="Start menu"><span class="windows-mark"><b></b><b></b><b></b><b></b></span></button><button class="task-button search-task" id="searchButton">⌕ <span>Search</span></button></div>
+      <div class="taskbar-apps">
+        <button class="task-button" data-open="files" title="File Explorer">📁</button>
+        <button class="task-button" data-open="browser" title="Browser">🌐</button>
+        <button class="task-button" data-open="terminal" title="Terminal">⌘</button>
+      </div>
+      <div class="system-tray"><button id="trayButton" class="tray-button"><span>⌃</span><span>◉</span><span>◖</span><span>◧</span></button><div class="clock" id="clock"><strong>--:--</strong><small>--/--/----</small></div></div>
+    </nav>
+  </main>
+  <div id="toast" class="toast"></div>
+  <script src="app.js"></script>
+</body></html>
