@@ -1,0 +1,41 @@
+name: Windows Runner (Temporary)
+on:
+  workflow_dispatch:
+    inputs:
+      task:
+        description: "Choose a safe diagnostic task"
+        required: true
+        type: choice
+        options:
+          - system-info
+          - workspace-check
+permissions:
+  contents: read
+jobs:
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Collect Windows environment information
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path output | Out-Null
+          "Ghazaal Cloud PC - temporary GitHub-hosted Windows runner" | Out-File output/report.txt
+          "Generated: $(Get-Date -Format o)" | Out-File output/report.txt -Append
+          "Computer: $env:COMPUTERNAME" | Out-File output/report.txt -Append
+          "OS: $([System.Environment]::OSVersion.VersionString)" | Out-File output/report.txt -Append
+          "PowerShell: $($PSVersionTable.PSVersion)" | Out-File output/report.txt -Append
+          "Task: ${{ inputs.task }}" | Out-File output/report.txt -Append
+          if (" ${{ inputs.task }}" -match "workspace-check") {
+            "Repository files:" | Out-File output/report.txt -Append
+            Get-ChildItem -Force | Select-Object Name,Mode | Format-Table -AutoSize | Out-String | Out-File output/report.txt -Append
+          }
+          Get-ComputerInfo | Select-Object WindowsProductName,WindowsVersion,OsArchitecture,CsNumberOfLogicalProcessors,CsTotalPhysicalMemory | Format-List | Out-File output/report.txt -Append
+      - name: Upload diagnostic report
+        uses: actions/upload-artifact@v4
+        with:
+          name: ghazaal-windows-runner-report
+          path: output/report.txt
+          retention-days: 3
