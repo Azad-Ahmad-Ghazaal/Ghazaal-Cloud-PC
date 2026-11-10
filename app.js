@@ -10,9 +10,14 @@ const apps={
  about:{title:'About Ghazaal Cloud PC',icon:'ⓘ',render:()=>`<div class="hero-card"><div class="eyebrow">Project information</div><h2>Ghazaal Cloud PC</h2><p>A Windows-inspired workspace built with HTML, CSS, JavaScript and GitHub Pages.</p></div><h3 class="section-title">Important distinction</h3><p style="font-size:13px;line-height:1.7;color:#53657b">This app is a browser desktop simulation. Files are stored in this browser's local storage. The GitHub Actions Windows runner is temporary automation, not a persistent remote desktop. No Windows license or remote Windows session is provided by this page.</p><p style="font-size:12px;color:#53657b">Build: v0.1 · Owner: Azad-Ahmad-Ghazaal</p><button class="primary-button" data-url="https://github.com/Azad-Ahmad-Ghazaal/Ghazaal-Cloud-PC">Open project on GitHub ↗</button>`}
 };
 function notify(msg){toastEl.textContent=msg;toastEl.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>toastEl.classList.remove('show'),2300)}
-function openApp(id){const app=apps[id];if(!app)return;start.classList.add('hidden');quick.classList.add('hidden');const old=$(`[data-window="${id}"]`);if(old){old.style.zIndex=++z;old.classList.remove('minimized');return}
+function openApp(id){const app=apps[id];if(!app)return;start.classList.add('hidden');quick.classList.add('hidden');const old=$(`[data-window="${id}"]`);if(old){old.style.zIndex=++z;old.classList.remove('minimized');old.style.display='flex';return}
 const win=document.createElement('article');win.className='app-window';win.dataset.window=id;win.style.zIndex=++z;win.innerHTML=`<header class="titlebar"><strong>${app.icon}　${app.title}</strong><div class="window-controls"><button data-minimize title="Minimize">—</button><button data-maximize title="Maximize">□</button><button class="close" data-close title="Close">×</button></div></header><div class="window-body">${app.render()}</div>`;layer.append(win);
 win.addEventListener('mousedown',()=>win.style.zIndex=++z);
+const bar=win.querySelector('.titlebar');let drag=null;
+bar.addEventListener('pointerdown',e=>{if(e.target.closest('.window-controls')||win.classList.contains('maximized'))return;const r=win.getBoundingClientRect();drag={x:e.clientX-r.left,y:e.clientY-r.top};bar.setPointerCapture(e.pointerId)});
+bar.addEventListener('pointermove',e=>{if(!drag)return;const maxX=Math.max(0,window.innerWidth-win.offsetWidth),maxY=Math.max(0,window.innerHeight-54-win.offsetHeight);win.style.left=Math.min(maxX,Math.max(0,e.clientX-drag.x))+'px';win.style.top=Math.min(maxY,Math.max(0,e.clientY-drag.y))+'px';win.style.transform='none'});
+bar.addEventListener('pointerup',()=>{drag=null});
+bar.addEventListener('pointercancel',()=>{drag=null});
 win.querySelector('[data-close]').onclick=()=>win.remove();
 win.querySelector('[data-minimize]').onclick=()=>{win.classList.add('minimized');win.style.display='none';notify(app.title+' minimized')};
 win.querySelector('[data-maximize]').onclick=()=>win.classList.toggle('maximized');
