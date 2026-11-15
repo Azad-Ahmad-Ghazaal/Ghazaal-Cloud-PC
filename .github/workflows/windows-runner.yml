@@ -1,28 +1,67 @@
-name: Windows Runner Check
+name: Windows 2025 Runner Check
+
 on:
   workflow_dispatch:
-  push:
-    branches: [main, feat/desktop-v1]
+
 permissions:
   contents: read
+
+concurrency:
+  group: windows-2025-poc
+  cancel-in-progress: true
+
 jobs:
   validate-on-windows:
-    runs-on: windows-latest
+    name: Validate project on Windows Server 2025 runner
+    runs-on: windows-2025
+    timeout-minutes: 10
+
     steps:
-      - uses: actions/checkout@v4
-      - name: Confirm Windows runner
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Report Windows environment
         shell: pwsh
         run: |
-          Write-Host "Ghazaal Cloud PC validation runner"
-          Get-ComputerInfo | Select-Object WindowsProductName, WindowsVersion, OsArchitecture
-          if ($env:RUNNER_OS -ne "Windows") { throw "Expected Windows runner" }
+          if ($env:RUNNER_OS -ne "Windows") {
+            throw "Expected a Windows GitHub-hosted runner."
+          }
+
+          $os = Get-CimInstance Win32_OperatingSystem
+          $computer = Get-CimInstance Win32_ComputerSystem
+          $cpu = (Get-CimInstance Win32_Processor | Measure-Object -Property NumberOfLogicalProcessors -Sum).Sum
+          $disk = Get-Volume -DriveLetter C
+
+          Write-Host "=== Ghazaal Cloud PC: Windows runner proof of concept ==="
+          Write-Host "OS: $($os.Caption)"
+          Write-Host "Version: $($os.Version)"
+          Write-Host "Build: $($os.BuildNumber)"
+          Write-Host "Architecture: $($os.OSArchitecture)"
+          Write-Host "Logical processors: $cpu"
+          Write-Host ("Installed RAM (GB): {0:N1}" -f ($computer.TotalPhysicalMemory / 1GB))
+          Write-Host ("C: free space (GB): {0:N1}" -f ($disk.SizeRemaining / 1GB))
+          Write-Host "Runner image: $env:ImageOS $env:ImageVersion"
+          Write-Host "PowerShell: $($PSVersionTable.PSVersion)"
+
       - name: Check required project files
         shell: pwsh
         run: |
-          $required = @("index.html", "README.md", "setup/windows-setup.ps1")
+          $required = @(
+            "index.html",
+            "README.md",
+            "setup/windows-setup.ps1"
+          )
+
           foreach ($file in $required) {
-            if (-not (Test-Path $file)) { throw "Missing file: $file" }
+            if (-not (Test-Path $file -PathType Leaf)) {
+              throw "Missing required project file: $file"
+            }
+            Write-Host "Found: $file"
           }
+
           $html = Get-Content "index.html" -Raw
-          if ($html -notmatch "Ghazaal Cloud PC") { throw "Desktop title missing" }
-          Write-Host "Project checks passed."
+          if ($html -notmatch "Ghazaal Cloud PC") {
+            throw "Expected desktop title was not found in index.html."
+          }
+
+          Write-Host "All project checks passed."
