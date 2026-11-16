@@ -81,7 +81,7 @@ for (const [pattern, label] of explorerChecks) {
 const explorerV2Checks = [
   [/function edit\(item\)/, "text file editing"],
   [/function isDescendant\(x,parentId\)/, "nested folder hierarchy"],
-  [/currentFolder===null/, "root folder navigation"],
+  [/parentId===currentFolder/, "folder-scoped navigation"],
   [/id="fileCount"/, "workspace item count"],
   [/function restore\(item\)/, "Recycle Bin restore"],
   [/function purge\(item\)/, "permanent deletion"],
