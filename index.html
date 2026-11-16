@@ -36,33 +36,53 @@ const titlebar=$('#titlebar');let drag=null;titlebar.addEventListener('pointerdo
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){win.classList.remove('show');start.classList.remove('show')}});
 function setupFileExplorer(){
  const storageKey='ghazaal-cloud-pc-files-v1',list=$('#fileList'),notice=$('#fileNotice');
+ let items=[],currentFolder=null,showTrash=false,sortMode='name',searchTerm='';
  const say=m=>{notice.textContent=m};
- const load=()=>{try{const raw=localStorage.getItem(storageKey);const data=raw?JSON.parse(raw):[];return Array.isArray(data)?data.filter(x=>x&&typeof x.id==='string'&&typeof x.name==='string'&&(x.type==='file'||x.type==='folder')):[]}catch{return []}};
- const save=items=>{try{localStorage.setItem(storageKey,JSON.stringify(items));return true}catch{say('Browser storage is full or unavailable. Download files and free some space.');return false}};
- let items=load();
+ const load=()=>{try{const raw=localStorage.getItem(storageKey),data=raw?JSON.parse(raw):[];return Array.isArray(data)?data.filter(x=>x&&typeof x.id==='string'&&typeof x.name==='string'&&(x.type==='file'||x.type==='folder')).map(x=>({...x,parentId:x.parentId||null,deletedAt:x.deletedAt||null})):[]}catch{return []}};
+ const save=()=>{try{localStorage.setItem(storageKey,JSON.stringify(items));return true}catch{say('Browser storage is full or unavailable. Export a backup and free some space.');return false}};
  const safeName=name=>{const n=name.trim().replace(/[\\\/:*?"<>|]/g,'-').slice(0,100);return n||''};
  const makeId=()=>Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,9);
+ const active=x=>showTrash?!!x.deletedAt:!x.deletedAt;
+ const parentExists=id=>!id||items.some(x=>x.id===id&&x.type==='folder'&&!x.deletedAt);
+ const uniqueName=(name,parent,exclude)=>!items.some(x=>x.id!==exclude&&x.parentId===parent&&!x.deletedAt&&x.name.toLowerCase()===name.toLowerCase());
  function render(){
   list.replaceChildren();
-  $('#fileCount').textContent=items.length+' item'+(items.length===1?'':'s');
-  if(!items.length){const p=document.createElement('p');p.className='muted';p.textContent='Your workspace is empty. Create a folder or text file to get started.';list.append(p);return}
-  for(const item of items){
+  const controls=document.createElement('div');controls.style.cssText='display:flex;gap:8px;flex-wrap:wrap;margin:12px 0';
+  const search=document.createElement('input');search.className='field';search.placeholder='Search current folder…';search.value=searchTerm;search.style.cssText='flex:1;min-width:150px;margin:0';search.setAttribute('aria-label','Search files');search.addEventListener('input',()=>{searchTerm=search.value;render()});controls.append(search);
+  const sort=document.createElement('select');sort.className='field';sort.style.cssText='width:auto;margin:0';sort.setAttribute('aria-label','Sort files');[['name','Name A–Z'],['newest','Newest first'],['oldest','Oldest first'],['type','Type']].forEach(([v,t])=>{const o=document.createElement('option');o.value=v;o.textContent=t;sort.append(o)});sort.value=sortMode;sort.addEventListener('change',()=>{sortMode=sort.value;render()});controls.append(sort);list.append(controls);
+  const nav=document.createElement('div');nav.style.cssText='display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px';
+  const home=document.createElement('button');home.textContent='Home';home.onclick=()=>{currentFolder=null;showTrash=false;searchTerm='';render()};nav.append(home);
+  let folder=currentFolder?items.find(x=>x.id===currentFolder):null;
+  if(currentFolder&&!folder){currentFolder=null;folder=null}
+  if(folder){const crumb=document.createElement('span');crumb.className='muted';crumb.textContent='› '+folder.name;nav.append(crumb)}
+  const trash=document.createElement('button');trash.textContent=showTrash?'← Back to files':'♲ Recycle Bin';trash.onclick=()=>{showTrash=!showTrash;currentFolder=null;searchTerm='';render()};nav.append(trash);list.append(nav);
+  const visible=items.filter(x=>active(x)&&(showTrash||x.parentId===currentFolder)&&(!showTrash||true)&&x.name.toLowerCase().includes(searchTerm.toLowerCase()));
+  visible.sort((a,b)=>sortMode==='newest'?String(b.created||'').localeCompare(String(a.created||'')):sortMode==='oldest'?String(a.created||'').localeCompare(String(b.created||'')):sortMode==='type'?a.type.localeCompare(b.type)||a.name.localeCompare(b.name):a.name.localeCompare(b.name));
+  $('#fileCount').textContent=items.filter(x=>!x.deletedAt).length+' items · '+items.filter(x=>x.deletedAt).length+' in trash';
+  if(!visible.length){const p=document.createElement('p');p.className='muted';p.textContent=showTrash?'Recycle Bin is empty.':'No items here. Create a folder or text file to get started.';list.append(p);return}
+  for(const item of visible){
    const card=document.createElement('div');card.className='file';
    const name=document.createElement('div');name.style.cssText='font-weight:600;overflow-wrap:anywhere;margin-bottom:10px';name.textContent=(item.type==='folder'?'📁 ':'📝 ')+item.name;card.append(name);
-   if(item.type==='file'){const preview=document.createElement('div');preview.className='muted';preview.style.cssText='font-size:12px;overflow-wrap:anywhere;margin-bottom:10px';preview.textContent=(item.content||'').slice(0,90)||'Empty text file';card.append(preview)}
+   if(item.type==='file'&&!showTrash){const preview=document.createElement('div');preview.className='muted';preview.style.cssText='font-size:12px;overflow-wrap:anywhere;margin-bottom:10px';preview.textContent=(item.content||'').slice(0,90)||'Empty text file';card.append(preview)}
    const actions=document.createElement('div');actions.style.cssText='display:flex;gap:5px;flex-wrap:wrap';
    const button=(label,action)=>{const b=document.createElement('button');b.type='button';b.textContent=label;b.style.cssText='padding:5px 8px;font-size:12px';b.addEventListener('click',action);actions.append(b)};
-   button('Rename',()=>rename(item));if(item.type==='file')button('Download',()=>download(item));button('Delete',()=>remove(item));card.append(actions);list.append(card);
+   if(showTrash){button('Restore',()=>restore(item));button('Delete forever',()=>purge(item))}
+   else{if(item.type==='folder')button('Open',()=>{currentFolder=item.id;searchTerm='';render()});else{button('Open / Edit',()=>edit(item));button('Download',()=>download(item))}button('Rename',()=>rename(item));button('Move to trash',()=>trashItem(item))}
+   card.append(actions);list.append(card);
   }
  }
- function rename(item){const next=safeName(prompt('Enter a new name:',item.name)||'');if(!next)return;item.name=next;if(save(items)){render();say('Renamed: '+next)}}
- function remove(item){if(!confirm('Delete "'+item.name+'"? This cannot be undone.'))return;items=items.filter(x=>x.id!==item.id);if(save(items)){render();say('Deleted: '+item.name)}}
+ function create(type){const name=safeName(prompt(type==='folder'?'Folder name:':'Text file name (example: notes.txt):')||'');if(!name)return;if(!uniqueName(name,currentFolder))return say('An item with that name already exists here.');const item={id:makeId(),name,type,parentId:currentFolder,created:new Date().toISOString(),content:''};if(type==='file')item.content=prompt('Text file contents:')||'';items.push(item);if(save()){render();say((type==='folder'?'Folder':'File')+' created: '+name)}}
+ function rename(item){const next=safeName(prompt('Enter a new name:',item.name)||'');if(!next||next===item.name)return;if(!uniqueName(next,item.parentId,item.id))return say('An item with that name already exists here.');item.name=next;if(save()){render();say('Renamed: '+next)}}
+ function edit(item){const next=prompt('Edit text file contents:',item.content||'');if(next===null)return;item.content=next;item.updated=new Date().toISOString();if(save()){render();say('Saved: '+item.name)}}
+ function trashItem(item){if(!confirm('Move "'+item.name+'" to Recycle Bin?'))return;const now=new Date().toISOString();const mark=x=>{if(x.id===item.id||isDescendant(x,item.id))x.deletedAt=now};items.forEach(mark);if(save()){render();say('Moved to Recycle Bin.')}}
+ function isDescendant(x,parentId){let p=x.parentId;while(p){if(p===parentId)return true;const parent=items.find(y=>y.id===p);p=parent?parent.parentId:null}return false}
+ function restore(item){item.deletedAt=null;if(!parentExists(item.parentId))item.parentId=null;if(!uniqueName(item.name,item.parentId,item.id)){item.name=item.name+' (restored)'};if(save()){render();say('Restored: '+item.name)}}
+ function purge(item){if(!confirm('Permanently delete "'+item.name+'" and its contents?'))return;items=items.filter(x=>x.id!==item.id&&!isDescendant(x,item.id));if(save()){render();say('Permanently deleted.')}}
  function download(item){const blob=new Blob([item.content||''],{type:'text/plain;charset=utf-8'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=item.name.endsWith('.txt')?item.name:item.name+'.txt';document.body.append(a);a.click();a.remove();URL.revokeObjectURL(url);say('Download started: '+a.download)}
- $('#newFolderBtn').onclick=()=>{const name=safeName(prompt('Folder name:')||'');if(!name)return;items.push({id:makeId(),name,type:'folder',created:new Date().toISOString()});if(save(items)){render();say('Folder created: '+name)}};
- $('#newFileBtn').onclick=()=>{const name=safeName(prompt('Text file name (example: notes.txt):')||'');if(!name)return;const content=prompt('Text file contents:')||'';items.push({id:makeId(),name,type:'file',content,created:new Date().toISOString()});if(save(items)){render();say('File created: '+name)}};
+ $('#newFolderBtn').onclick=()=>create('folder');$('#newFileBtn').onclick=()=>create('file');
  $('#downloadAllBtn').onclick=()=>{const blob=new Blob([JSON.stringify({app:'Ghazaal Cloud PC',exportedAt:new Date().toISOString(),items},null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='ghazaal-workspace-backup.json';document.body.append(a);a.click();a.remove();URL.revokeObjectURL(url);say('Workspace backup downloaded.')};
- $('#clearFilesBtn').onclick=()=>{if(!items.length)return say('Workspace is already empty.');if(!confirm('Delete every item in this browser workspace?'))return;items=[];if(save(items)){render();say('Workspace cleared.')}};
- render();
+ $('#clearFilesBtn').onclick=()=>{if(!confirm('Permanently delete every workspace item, including Recycle Bin?'))return;items=[];if(save()){currentFolder=null;showTrash=false;render();say('Workspace cleared.')}};
+ items=load();render();
 }
 function setupTerminal(){const input=$('#cmd'),out=$('#out');input.focus();input.onkeydown=e=>{if(e.key!=='Enter')return;const c=input.value.trim();let msg='';switch(c.toLowerCase()){case'help':msg='Available demo commands: help, date, whoami, clear, about';break;case'date':msg=new Date().toString();break;case'whoami':msg='guest (browser demo)';break;case'about':msg='This is not a real OS terminal or remote shell.';break;case'clear':out.textContent='';input.value='';return;case'':break;default:msg='Command not found. Type help.'}out.textContent+='\n'+msg+'\nguest@ghazaal:~$ ';input.value='';}}
 function tick(){const d=new Date();$('#clock').innerHTML=d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})+'<br><span class="muted">'+d.toLocaleDateString([], {month:'short',day:'numeric'})+'</span>'}tick();setInterval(tick,1000);
