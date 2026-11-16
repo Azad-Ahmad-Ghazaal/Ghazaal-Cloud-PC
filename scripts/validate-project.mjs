@@ -73,7 +73,7 @@ const explorerChecks = [
   [/localStorage\.getItem\(storageKey\)/, "browser-local file loading"],
   [/localStorage\.setItem\(storageKey/, "browser-local file saving"],
   [/function rename\(item\)/, "file rename action"],
-  [/function remove\(item\)/, "file delete action"],
+  [/function trashItem\(item\)/, "file delete action"],
   [/function download\(item\)/, "file download action"],
   [/function cloudRequest\(path,options=\{\}\)/, "GitHub API request helper"],
   [/sessionStorage\.setItem\(ghTokenKey,token\)/, "session-only token storage"],
