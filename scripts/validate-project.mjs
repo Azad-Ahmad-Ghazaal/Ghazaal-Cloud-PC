@@ -88,7 +88,7 @@ for (const [link] of blankTargetLinks) {
 }
 if (blankTargetLinks.length) pass("new-tab links were checked for noopener protection");
 
-if (/temporary GitHub-hosted Windows runner/i.test(readme) &&
+if (/(temporary hosted Windows runner|temporary automation runners)/i.test(readme) &&
     /not a remote desktop/i.test(readme) &&
     /no real cloud storage/i.test(readme)) {
   pass("README clearly documents temporary-runner and prototype limitations");
