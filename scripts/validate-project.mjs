@@ -78,6 +78,21 @@ for (const [pattern, label] of explorerChecks) {
   else fail("File Explorer is missing " + label);
 }
 
+const explorerV2Checks = [
+  [/function edit\(item\)/, "text file editing"],
+  [/function isDescendant\(x,parentId\)/, "nested folder hierarchy"],
+  [/parentId===currentFolder/, "folder-scoped navigation"],
+  [/id="fileCount"/, "workspace item count"],
+  [/function restore\(item\)/, "Recycle Bin restore"],
+  [/function purge\(item\)/, "permanent deletion"],
+  [/Search current folder/, "file search"],
+  [/Newest first/, "file sorting"],
+];
+for (const [pattern, label] of explorerV2Checks) {
+  if (pattern.test(html)) pass("File Explorer v2 includes " + label);
+  else fail("File Explorer v2 is missing " + label);
+}
+
 const scriptBlocks = [...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)];
 if (scriptBlocks.length === 0) {
   fail("no inline application script was found");
