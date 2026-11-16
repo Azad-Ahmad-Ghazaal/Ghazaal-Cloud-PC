@@ -27,7 +27,7 @@ The workflow runs `node scripts/validate-project.mjs` before its Windows environ
 ## Private GitHub workspace backup
 The File Explorer can upload/download one workspace backup file to a **separate private GitHub repository**. This is backup/restore, not continuous real-time synchronization.
 
-1. Create a new **private** repository, for example `Ghazaal-Cloud-Data`. Do not use this public source-code repository for personal files.
+1. Create a new **private** repository, for example `Ghazaal-Cloud-Data`, and select **Add a README file** so the repository has an initial `main` branch. Do not use this public source-code repository for personal files.
 2. Create a fine-grained personal access token at https://github.com/settings/personal-access-tokens/new.
 3. Set **Resource owner** to your account, **Repository access** to **Only select repositories**, and select only the private data repository.
 4. Under **Repository permissions**, grant **Contents: Read and write**. Metadata read is included automatically. Set an expiry; do not create a classic token or grant broad account access.
