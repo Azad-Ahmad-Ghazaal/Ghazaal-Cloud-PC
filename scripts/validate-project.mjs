@@ -61,6 +61,23 @@ if (/addEventListener\('pointermove'/.test(html) && /win\.style\.left/.test(html
   fail("desktop window dragging behavior is missing");
 }
 
+const explorerChecks = [
+  [/id="newFolderBtn"/, "new-folder control"],
+  [/id="newFileBtn"/, "new-text-file control"],
+  [/id="downloadAllBtn"/, "workspace export control"],
+  [/id="clearFilesBtn"/, "clear-workspace control"],
+  [/localStorage\.getItem\(storageKey\)/, "browser-local file loading"],
+  [/localStorage\.setItem\(storageKey/, "browser-local file saving"],
+  [/function rename\(item\)/, "file rename action"],
+  [/function remove\(item\)/, "file delete action"],
+  [/function download\(item\)/, "file download action"],
+  [/new Blob\(\[JSON\.stringify/, "workspace backup export"],
+];
+for (const [pattern, label] of explorerChecks) {
+  if (pattern.test(html)) pass("File Explorer includes " + label);
+  else fail("File Explorer is missing " + label);
+}
+
 const scriptBlocks = [...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)];
 if (scriptBlocks.length === 0) {
   fail("no inline application script was found");
