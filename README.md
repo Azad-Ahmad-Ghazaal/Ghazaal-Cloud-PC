@@ -7,6 +7,7 @@ A Windows-inspired, browser-based workspace prototype built and deployed with Gi
 - Demo File Explorer, Terminal, Browser, Settings and About windows
 - GitHub Pages deployment workflow
 - Windows GitHub Actions runner for temporary project validation
+- Automated HTML, inline JavaScript, UI wiring and project-scope checks
 - Optional local Windows workspace helper
 
 ## Deploy
@@ -17,6 +18,8 @@ A Windows-inspired, browser-based workspace prototype built and deployed with Gi
 
 ## Windows runner
 Run **Actions → Windows Runner Check → Run workflow**. GitHub will start a temporary hosted Windows runner to validate project files. The runner is destroyed after the job; it is not a remote desktop and does not preserve files between runs.
+
+The workflow runs `node scripts/validate-project.mjs` before its Windows environment and temporary-file checks. The validator uses Node.js built-in modules only; it does not install packages or contact external services.
 
 ## Honest scope
 This repository does not install or host a persistent Windows 11 VM. GitHub Pages hosts the web interface, while GitHub Actions provides temporary automation runners only. The desktop apps and file manager are prototypes; no real cloud storage or shell execution is configured.
@@ -33,6 +36,7 @@ This only creates a local `GhazaalWorkspace` folder.
 - [x] Desktop UI prototype
 - [x] GitHub Pages workflow
 - [x] Windows CI runner workflow
+- [x] Automated static project validation
 - [ ] Add authenticated, persistent file storage (requires a storage service)
 - [ ] Real remote Windows desktop (requires a separately hosted and licensed VM)
 
