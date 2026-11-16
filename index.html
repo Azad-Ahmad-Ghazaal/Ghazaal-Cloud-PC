@@ -40,7 +40,7 @@ function setupFileExplorer(){
  const load=()=>{try{const raw=localStorage.getItem(storageKey);const data=raw?JSON.parse(raw):[];return Array.isArray(data)?data.filter(x=>x&&typeof x.id==='string'&&typeof x.name==='string'&&(x.type==='file'||x.type==='folder')):[]}catch{return []}};
  const save=items=>{try{localStorage.setItem(storageKey,JSON.stringify(items));return true}catch{say('Browser storage is full or unavailable. Download files and free some space.');return false}};
  let items=load();
- const safeName=name=>{const n=name.trim().replace(/[\\\\/:*?"<>|]/g,'-').slice(0,100);return n||''};
+ const safeName=name=>{const n=name.trim().replace(/[\\\/:*?"<>|]/g,'-').slice(0,100);return n||''};
  const makeId=()=>Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,9);
  function render(){
   list.replaceChildren();
