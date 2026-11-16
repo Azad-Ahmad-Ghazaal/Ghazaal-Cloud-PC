@@ -5,7 +5,7 @@ A Windows-inspired, browser-based workspace prototype built and deployed with Gi
 ## Current v0.1 features
 - Responsive desktop, taskbar, clock and Start menu
 - Draggable application windows with minimize and restore controls
-- Browser-local File Explorer with create, rename, delete, download and backup export
+- Browser-local File Explorer with nested folders, text editing, search, sorting, Recycle Bin, download and backup export
 - Demo Terminal, Browser, Settings and About windows
 - GitHub Pages deployment workflow
 - Windows GitHub Actions runner for temporary project validation
