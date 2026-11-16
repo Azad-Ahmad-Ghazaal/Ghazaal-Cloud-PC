@@ -20,6 +20,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v5
 
+      - name: Validate desktop prototype and JavaScript
+        shell: pwsh
+        run: |
+          node --version
+          node scripts/validate-project.mjs
+
       - name: Report Windows environment
         shell: pwsh
         run: |
@@ -49,7 +55,8 @@ jobs:
           $required = @(
             "index.html",
             "README.md",
-            "setup/windows-setup.ps1"
+            "setup/windows-setup.ps1",
+            "scripts/validate-project.mjs"
           )
 
           foreach ($file in $required) {
