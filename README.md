@@ -4,6 +4,7 @@ A Windows-inspired, browser-based workspace prototype built and deployed with Gi
 
 ## Current v0.1 features
 - Responsive desktop, taskbar, clock and Start menu
+- Draggable application windows with minimize and restore controls
 - Demo File Explorer, Terminal, Browser, Settings and About windows
 - GitHub Pages deployment workflow
 - Windows GitHub Actions runner for temporary project validation

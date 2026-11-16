@@ -49,6 +49,18 @@ for (const app of expectedApps) {
   }
 }
 
+if (html.includes('id="minBtn"') && /win\.classList\.add\('minimized'\)/.test(html)) {
+  pass("desktop window has a minimize control");
+} else {
+  fail("desktop window minimize control is missing or disconnected");
+}
+
+if (/addEventListener\('pointermove'/.test(html) && /win\.style\.left/.test(html)) {
+  pass("desktop window supports pointer-based dragging");
+} else {
+  fail("desktop window dragging behavior is missing");
+}
+
 const scriptBlocks = [...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)];
 if (scriptBlocks.length === 0) {
   fail("no inline application script was found");
