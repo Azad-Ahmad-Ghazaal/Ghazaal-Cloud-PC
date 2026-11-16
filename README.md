@@ -7,6 +7,7 @@ A Windows-inspired, browser-based workspace prototype built and deployed with Gi
 - Draggable application windows with minimize and restore controls
 - Browser-local File Explorer with nested folders, text editing, search, sorting, Recycle Bin, download and backup export
 - Optional private GitHub repository backup upload/download (user-provided fine-grained token; not automatic live sync)
+- Google Account Workspaces launcher for multiple signed-in Google accounts (Gmail, Drive, Docs and YouTube shortcuts by Google account slot)
 - Demo Terminal, Browser, Settings and About windows
 - GitHub Pages deployment workflow
 - Windows GitHub Actions runner for temporary project validation
@@ -18,6 +19,12 @@ A Windows-inspired, browser-based workspace prototype built and deployed with Gi
 2. Set **Build and deployment → Source** to **GitHub Actions**.
 3. Merge the desktop implementation into `main` to trigger `.github/workflows/deploy-pages.yml`.
 4. The deployed URL will appear in the Pages settings and deployment environment.
+
+## Multiple Google accounts
+
+Open **Google Accounts** from the desktop, Start menu or taskbar. First sign in to each Google account using Google's own account chooser in the same browser. Add a workspace label, email and the account slot number shown by Google (0, 1, 2, etc.). Each saved workspace opens Gmail, Drive, Docs or YouTube using that Google account slot.
+
+The launcher stores only the label, email and slot in this browser's local storage. It never requests or stores Google passwords. This is a shortcut manager that uses Google's supported multi-account sign-in in the current browser; it does **not** create isolated Chromium profiles, remote browser sessions, or cloud-persistent Google logins. Your sessions remain in the browser/device where you signed in. To use another device, sign in there as well and add the shortcuts again. Upload files to websites through the website's own upload control and file picker.
 
 ## Windows runner
 Run **Actions → Windows Runner Check → Run workflow**. GitHub will start a temporary hosted Windows runner to validate project files. The runner is destroyed after the job; it is not a remote desktop and does not preserve files between runs.
@@ -52,6 +59,8 @@ This only creates a local `GhazaalWorkspace` folder.
 - [x] Windows CI runner workflow
 - [x] Automated static project validation
 - [x] Add optional private GitHub backup upload/download (requires user-created private repository and fine-grained token)
-- [ ] Real remote Windows desktop (requires a separately hosted and licensed VM)
+- [x] Google account shortcut workspaces (browser-local; uses Google's own multi-account sign-in)
+- [ ] Isolated persistent cloud browser profiles (not provided by GitHub Pages or Actions)
+- [ ] Real remote Windows desktop (requires a persistent hosted and licensed VM)
 
 Never commit credentials or personal files.
