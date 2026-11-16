@@ -65,3 +65,57 @@ jobs:
           }
 
           Write-Host "All project checks passed."
+
+      - name: Test temporary file operations
+        shell: pwsh
+        run: |
+          $testDirectory = Join-Path $env:RUNNER_TEMP "ghazaal-smoke-test"
+          $testFile = Join-Path $testDirectory "runner-test.txt"
+          $expected = "Ghazaal Cloud PC temporary storage test"
+
+          New-Item -ItemType Directory -Force -Path $testDirectory | Out-Null
+          Set-Content -Path $testFile -Value $expected -Encoding UTF8
+
+          $actual = (Get-Content -Path $testFile -Raw).Trim()
+          if ($actual -ne $expected) {
+            throw "Temporary file read-back did not match."
+          }
+
+          Remove-Item -Path $testFile -Force
+          if (Test-Path $testFile) {
+            throw "Temporary test file was not removed."
+          }
+
+          Write-Host "PASS: temporary file create/read/delete operations."
+
+      - name: Inventory development tools and browsers
+        shell: pwsh
+        run: |
+          $tools = @("git", "python", "python3", "node", "npm", "dotnet", "winget", "choco", "scoop")
+          foreach ($tool in $tools) {
+            $command = Get-Command $tool -ErrorAction SilentlyContinue | Select-Object -First 1
+            if ($command) {
+              Write-Host "AVAILABLE: $tool -> $($command.Source)"
+              if ($tool -in @("git", "python", "python3", "node", "npm", "dotnet")) {
+                & $command.Source --version 2>&1 | Select-Object -First 1
+              }
+            }
+            else {
+              Write-Host "NOT FOUND: $tool"
+            }
+          }
+
+          $browsers = @(
+            "$env:ProgramFiles\Google\Chrome\Application\chrome.exe",
+            "${env:ProgramFiles(x86)}\Microsoft\Edge\Application\msedge.exe",
+            "$env:ProgramFiles\Microsoft\Edge\Application\msedge.exe",
+            "$env:ProgramFiles\Mozilla Firefox\firefox.exe"
+          )
+
+          foreach ($browser in $browsers) {
+            if (Test-Path $browser) {
+              Write-Host "BROWSER FOUND: $browser"
+            }
+          }
+
+          Write-Host "Inventory only: no software was installed or modified."
