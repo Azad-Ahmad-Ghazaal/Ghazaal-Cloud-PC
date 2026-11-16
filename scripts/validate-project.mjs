@@ -66,11 +66,20 @@ const explorerChecks = [
   [/id="newFileBtn"/, "new-text-file control"],
   [/id="downloadAllBtn"/, "workspace export control"],
   [/id="clearFilesBtn"/, "clear-workspace control"],
+  [/id="ghConnectBtn"/, "private GitHub connection control"],
+  [/id="ghUploadBtn"/, "private GitHub upload control"],
+  [/id="ghDownloadBtn"/, "private GitHub download control"],
+  [/id="ghDisconnectBtn"/, "private GitHub disconnect control"],
   [/localStorage\.getItem\(storageKey\)/, "browser-local file loading"],
   [/localStorage\.setItem\(storageKey/, "browser-local file saving"],
   [/function rename\(item\)/, "file rename action"],
   [/function remove\(item\)/, "file delete action"],
   [/function download\(item\)/, "file download action"],
+  [/function cloudRequest\(path,options=\{\}\)/, "GitHub API request helper"],
+  [/sessionStorage\.setItem\(ghTokenKey,token\)/, "session-only token storage"],
+  [/data\.private!==true/, "private repository enforcement"],
+  [/function encodeCloudText\(value\)/, "UTF-8 cloud backup encoding"],
+  [/Contents: Read and write/, "least-privilege token guidance"],
   [/new Blob\(\[JSON\.stringify/, "workspace backup export"],
 ];
 for (const [pattern, label] of explorerChecks) {
@@ -134,10 +143,11 @@ if (blankTargetLinks.length) pass("new-tab links were checked for noopener prote
 
 if (/(temporary hosted Windows runner|temporary automation runners)/i.test(readme) &&
     /not a remote desktop/i.test(readme) &&
-    /no real cloud storage/i.test(readme)) {
-  pass("README clearly documents temporary-runner and prototype limitations");
+    /not a live desktop filesystem/i.test(readme) &&
+    /private GitHub repository/i.test(readme)) {
+  pass("README clearly documents temporary-runner, private-backup and prototype limitations");
 } else {
-  fail("README must clearly explain that the runner is temporary and the UI is not a real cloud desktop");
+  fail("README must explain temporary runners, private backup scope and that the UI is not a real cloud desktop");
 }
 
 if (/uses:\s*actions\/checkout@v5/.test(workflow)) pass("workflow uses actions/checkout@v5");
