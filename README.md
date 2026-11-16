@@ -5,7 +5,8 @@ A Windows-inspired, browser-based workspace prototype built and deployed with Gi
 ## Current v0.1 features
 - Responsive desktop, taskbar, clock and Start menu
 - Draggable application windows with minimize and restore controls
-- Demo File Explorer, Terminal, Browser, Settings and About windows
+- Browser-local File Explorer with create, rename, delete, download and backup export
+- Demo Terminal, Browser, Settings and About windows
 - GitHub Pages deployment workflow
 - Windows GitHub Actions runner for temporary project validation
 - Automated HTML, inline JavaScript, UI wiring and project-scope checks
@@ -23,7 +24,7 @@ Run **Actions → Windows Runner Check → Run workflow**. GitHub will start a t
 The workflow runs `node scripts/validate-project.mjs` before its Windows environment and temporary-file checks. The validator uses Node.js built-in modules only; it does not install packages or contact external services.
 
 ## Honest scope
-This repository does not install or host a persistent Windows 11 VM. GitHub Pages hosts the web interface, while GitHub Actions provides temporary automation runners only. The desktop apps and file manager are prototypes; no real cloud storage or shell execution is configured.
+This repository does not install or host a persistent Windows 11 VM. GitHub Pages hosts the web interface, while GitHub Actions provides temporary automation runners only. The desktop apps are prototypes; File Explorer stores data only in this browser's local storage. Clearing browser data can erase it. No real cloud storage or shell execution is configured.
 
 ## Local helper
 On Windows PowerShell:
