@@ -93,7 +93,7 @@ public partial class MainWindow : Window
         if (!text.Contains("://") && text.Contains('.') && !text.Contains(' ')) text = "https://" + text;
         else if (!text.Contains("://")) text = "https://www.google.com/search?q=" + Uri.EscapeDataString(text);
         if (Uri.TryCreate(text, UriKind.Absolute, out var uri) && (uri.Scheme == "https" || uri.Scheme == "http"))
-            CurrentView?.Navigate(uri.ToString());
+            CurrentView?.CoreWebView2?.Navigate(uri.ToString());
     }
 
     private void Go_Click(object sender, RoutedEventArgs e) => Navigate();
