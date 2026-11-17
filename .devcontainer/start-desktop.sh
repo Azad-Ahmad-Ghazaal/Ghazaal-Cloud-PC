@@ -2,7 +2,7 @@
 set -euo pipefail
 
 export DISPLAY=:1
-PROFILE_DIR="/workspaces/.ghazaal-chromium-profile"
+PROFILE_DIR="$PWD/.codespaces-data/chromium-profile"
 mkdir -p "$PROFILE_DIR"
 
 if ! pgrep -x Xvfb >/dev/null 2>&1; then
