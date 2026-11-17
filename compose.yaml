@@ -1,0 +1,18 @@
+services:
+  webtop:
+    image: lscr.io/linuxserver/webtop:ubuntu-xfce
+    container_name: ghazaal-cloud-desktop
+    environment:
+      PUID: ${PUID:-1000}
+      PGID: ${PGID:-1000}
+      TZ: ${TZ:-Etc/UTC}
+      CUSTOM_USER: ${WEBTOP_USER:?Set WEBTOP_USER in your local .env file}
+      PASSWORD: ${WEBTOP_PASSWORD:?Set WEBTOP_PASSWORD in your local .env file}
+      TITLE: Ghazaal Cloud PC
+    volumes:
+      - ./webtop-config:/config
+    ports:
+      # Keep the desktop private on the host. Use Tailscale Serve for remote access.
+      - "127.0.0.1:3000:3000"
+    shm_size: "1gb"
+    restart: unless-stopped
