@@ -51,6 +51,7 @@ jobs:
         run: docker save "${{ steps.image.outputs.ref }}" --output "$RUNNER_TEMP/webtop-image.tar"
 
       - name: Scan image and save machine-readable report
+        id: scan
         run: |
           mkdir -p "$RUNNER_TEMP/audit-report"
           docker run --rm \
@@ -77,7 +78,7 @@ jobs:
             --format table
 
       - name: Upload vulnerability report
-        if: always() && hashFiles('${{ runner.temp }}/audit-report/webtop-trivy-report.json') != ''
+        if: always() && steps.scan.outcome == 'success'
         uses: actions/upload-artifact@v4
         with:
           name: webtop-trivy-report-${{ github.run_id }}
