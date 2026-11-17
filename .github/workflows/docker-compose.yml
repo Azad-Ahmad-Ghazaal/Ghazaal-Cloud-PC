@@ -37,3 +37,18 @@ jobs:
 
       - name: Validate Compose model using safe example values
         run: docker compose --env-file .env.example -f compose.yaml config --quiet
+
+      - name: Enforce private desktop container settings
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker compose --env-file .env.example -f compose.yaml config --format json > "$RUNNER_TEMP/compose.json"
+          jq -e '
+            .services.webtop as $service
+            | ($service.privileged // false) == false
+            and ($service.network_mode // "") != "host"
+            and (($service.cap_add // []) | length) == 0
+            and (($service.ports // []) | length) > 0
+            and all($service.ports[]; .host_ip == "127.0.0.1")
+          ' "$RUNNER_TEMP/compose.json" >/dev/null
+          echo "Private bind and container privilege checks passed."
