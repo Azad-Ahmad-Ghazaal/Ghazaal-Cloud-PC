@@ -1,0 +1,9 @@
+# Local deployment secrets
+.env
+.env.*
+
+# Allow the documented template to remain tracked
+!.env.example
+
+# Persistent desktop profile, browser sessions, and user files
+webtop-config/
