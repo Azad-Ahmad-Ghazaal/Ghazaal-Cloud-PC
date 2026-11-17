@@ -1,0 +1,54 @@
+name: Validate Docker Compose
+
+on:
+  pull_request:
+    branches:
+      - main
+      - feat/oracle-cloud-desktop-foundation
+    paths:
+      - "compose.yaml"
+      - ".env.example"
+      - ".github/workflows/docker-compose.yml"
+  push:
+    branches:
+      - feat/containerized-cloud-desktop
+    paths:
+      - "compose.yaml"
+      - ".env.example"
+      - ".github/workflows/docker-compose.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: docker-compose-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  compose-config:
+    name: Validate Compose configuration
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Check Docker Compose availability
+        run: docker compose version
+
+      - name: Validate Compose model using safe example values
+        run: docker compose --env-file .env.example -f compose.yaml config --quiet
+
+      - name: Enforce private desktop container settings
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker compose --env-file .env.example -f compose.yaml config --format json > "$RUNNER_TEMP/compose.json"
+          jq -e '
+            .services.webtop as $service
+            | ($service.privileged // false) == false
+            and ($service.network_mode // "") != "host"
+            and (($service.cap_add // []) | length) == 0
+            and (($service.ports // []) | length) > 0
+            and all($service.ports[]; .host_ip == "127.0.0.1")
+          ' "$RUNNER_TEMP/compose.json" >/dev/null
+          echo "Private bind and container privilege checks passed."

@@ -1,0 +1,48 @@
+name: Validate Codespaces desktop image
+
+on:
+  pull_request:
+    branches:
+      - main
+      - feat/oracle-cloud-desktop-foundation
+    paths:
+      - ".devcontainer/**"
+      - ".github/workflows/codespaces-desktop.yml"
+  push:
+    branches:
+      - feat/containerized-cloud-desktop
+    paths:
+      - ".devcontainer/**"
+      - ".github/workflows/codespaces-desktop.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: codespaces-desktop-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-desktop:
+    name: Build and smoke-test Codespaces desktop image
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Validate devcontainer JSON
+        run: jq -e . .devcontainer/devcontainer.json >/dev/null
+
+      - name: Build desktop image
+        run: docker build --pull -f .devcontainer/Dockerfile -t ghazaal-codespaces-desktop:test .
+
+      - name: Check desktop runtime packages
+        run: |
+          docker run --rm ghazaal-codespaces-desktop:test bash -lc '
+            command -v chromium &&
+            command -v Xvfb &&
+            command -v x11vnc &&
+            command -v websockify &&
+            test -d /usr/share/novnc
+          '

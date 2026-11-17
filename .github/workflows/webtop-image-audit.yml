@@ -1,0 +1,87 @@
+name: Audit Webtop container image
+
+on:
+  pull_request:
+    branches:
+      - main
+      - feat/oracle-cloud-desktop-foundation
+    paths:
+      - "compose.yaml"
+      - ".github/workflows/webtop-image-audit.yml"
+  push:
+    branches:
+      - feat/containerized-cloud-desktop
+    paths:
+      - "compose.yaml"
+      - ".github/workflows/webtop-image-audit.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: webtop-audit-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  image-audit:
+    name: Pull and scan Webtop image
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Read image reference
+        id: image
+        shell: bash
+        run: |
+          image="$(awk '/^[[:space:]]*image:/ {print $2; exit}' compose.yaml)"
+          if [[ -z "$image" ]]; then
+            echo "No image reference found in compose.yaml" >&2
+            exit 1
+          fi
+          echo "ref=$image" >> "$GITHUB_OUTPUT"
+          echo "Auditing image: $image"
+
+      - name: Verify image can be pulled
+        run: docker pull "${{ steps.image.outputs.ref }}"
+
+      - name: Export image for offline scanning
+        run: docker save "${{ steps.image.outputs.ref }}" --output "$RUNNER_TEMP/webtop-image.tar"
+
+      - name: Scan image and save machine-readable report
+        id: scan
+        run: |
+          mkdir -p "$RUNNER_TEMP/audit-report"
+          docker run --rm \
+            -v "$RUNNER_TEMP:/scan" \
+            aquasec/trivy:0.76.2 \
+            image --input /scan/webtop-image.tar \
+            --scanners vuln \
+            --severity HIGH,CRITICAL \
+            --ignore-unfixed \
+            --exit-code 0 \
+            --format json \
+            --output /scan/audit-report/webtop-trivy-report.json
+
+      - name: Print concise vulnerability summary
+        run: |
+          docker run --rm \
+            -v "$RUNNER_TEMP:/scan" \
+            aquasec/trivy:0.76.2 \
+            image --input /scan/webtop-image.tar \
+            --scanners vuln \
+            --severity HIGH,CRITICAL \
+            --ignore-unfixed \
+            --exit-code 0 \
+            --format table
+
+      - name: Upload vulnerability report
+        if: always() && steps.scan.outcome == 'success'
+        uses: actions/upload-artifact@v4
+        with:
+          name: webtop-trivy-report-${{ github.run_id }}
+          path: ${{ runner.temp }}/audit-report/webtop-trivy-report.json
+          if-no-files-found: error
+          retention-days: 30

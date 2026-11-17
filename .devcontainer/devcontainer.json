@@ -1,0 +1,19 @@
+{
+  "name": "Ghazaal Cloud PC (GitHub Codespaces)",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+  "forwardPorts": [6080],
+  "portsAttributes": {
+    "6080": {
+      "label": "Ghazaal Cloud Desktop",
+      "onAutoForward": "openBrowser",
+      "visibility": "private"
+    }
+  },
+  "postStartCommand": "bash .devcontainer/start-desktop.sh",
+  "remoteUser": "vscode",
+  "containerEnv": {
+    "DISPLAY": ":1"
+  }
+}
