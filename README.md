@@ -65,7 +65,7 @@ The Windows GitHub Actions workflow compiles the app on pull requests and manual
 
 ## Windows runner: temporary automation only
 
-GitHub Actions uses **temporary hosted Windows runner** machines for build or validation jobs. These are **temporary automation runners**, not a permanent computer. The runner is destroyed after the job; it does not preserve files or sessions between runs and is not an interactive remote desktop.
+GitHub Actions uses **temporary hosted Windows runner** machines for build or validation jobs. These are **temporary automation runners**, not a permanent computer. The runner is destroyed after the job; it does not preserve files or sessions between runs. It is **not a remote desktop** and is not an interactive remote desktop service.
 
 ## Private GitHub workspace backup
 
