@@ -52,7 +52,7 @@ jobs:
 
       - name: Scan image and save machine-readable report
         run: |
-          mkdir -p audit-report
+          mkdir -p "$RUNNER_TEMP/audit-report"
           docker run --rm \
             -v "$RUNNER_TEMP:/scan" \
             aquasec/trivy:0.76.2 \
@@ -77,10 +77,10 @@ jobs:
             --format table
 
       - name: Upload vulnerability report
-        if: always() && hashFiles('audit-report/webtop-trivy-report.json') != ''
+        if: always() && hashFiles('${{ runner.temp }}/audit-report/webtop-trivy-report.json') != ''
         uses: actions/upload-artifact@v4
         with:
           name: webtop-trivy-report-${{ github.run_id }}
-          path: audit-report/webtop-trivy-report.json
+          path: ${{ runner.temp }}/audit-report/webtop-trivy-report.json
           if-no-files-found: error
           retention-days: 30
