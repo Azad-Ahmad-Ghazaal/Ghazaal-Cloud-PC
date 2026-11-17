@@ -69,7 +69,7 @@ GitHub Actions uses **temporary hosted Windows runner** machines for build or va
 
 ## Private GitHub workspace backup
 
-The File Explorer can upload/download one workspace backup file to a **separate private GitHub repository**. This is backup/restore, not continuous real-time synchronization.
+The File Explorer can upload/download one workspace backup file to a **separate private GitHub repository**. This is backup/restore, not continuous real-time synchronization or a live desktop filesystem.
 
 1. Create a new **private** repository, for example `Ghazaal-Cloud-Data`, and select **Add a README file** so the repository has an initial `main` branch. Do not use this public source-code repository for personal files.
 2. Create a fine-grained personal access token at https://github.com/settings/personal-access-tokens/new.
