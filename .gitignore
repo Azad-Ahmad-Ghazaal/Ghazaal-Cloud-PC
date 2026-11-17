@@ -9,4 +9,5 @@
 webtop-config/
 
 # GitHub Codespaces browser profile (contains cookies and signed-in sessions)
-.ghazaal-chromium-profile/
+.codespaces-data/
+
