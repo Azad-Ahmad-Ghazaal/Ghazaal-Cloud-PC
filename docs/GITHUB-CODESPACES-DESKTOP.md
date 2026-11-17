@@ -7,7 +7,7 @@ This repository includes an optional XFCE + Chromium desktop for GitHub Codespac
 - A Debian-based XFCE desktop with Chromium.
 - Accessed through noVNC on forwarded port 6080.
 - Port 6080 is configured as **private**. Keep it private; do not change it to public.
-- Chromium's profile is stored in `/workspaces/.ghazaal-chromium-profile`, outside tracked repository files, so browser sessions can persist when the same Codespace is stopped and resumed.
+- Chromium's profile is stored in `.codespaces-data/chromium-profile/`, outside tracked repository files, so browser sessions can persist when the same Codespace is stopped and resumed.
 - The Codespace can be stopped when not in use.
 
 ## Create it
