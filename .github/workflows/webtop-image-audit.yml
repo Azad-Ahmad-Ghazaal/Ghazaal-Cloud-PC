@@ -50,8 +50,21 @@ jobs:
       - name: Export image for offline scanning
         run: docker save "${{ steps.image.outputs.ref }}" --output "$RUNNER_TEMP/webtop-image.tar"
 
-      - name: Scan image for known HIGH and CRITICAL vulnerabilities
-        continue-on-error: true
+      - name: Scan image and save machine-readable report
+        run: |
+          mkdir -p audit-report
+          docker run --rm \
+            -v "$RUNNER_TEMP:/scan" \
+            aquasec/trivy:0.76.2 \
+            image --input /scan/webtop-image.tar \
+            --scanners vuln \
+            --severity HIGH,CRITICAL \
+            --ignore-unfixed \
+            --exit-code 0 \
+            --format json \
+            --output /scan/audit-report/webtop-trivy-report.json
+
+      - name: Print concise vulnerability summary
         run: |
           docker run --rm \
             -v "$RUNNER_TEMP:/scan" \
@@ -62,3 +75,12 @@ jobs:
             --ignore-unfixed \
             --exit-code 0 \
             --format table
+
+      - name: Upload vulnerability report
+        if: always() && hashFiles('audit-report/webtop-trivy-report.json') != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: webtop-trivy-report-${{ github.run_id }}
+          path: audit-report/webtop-trivy-report.json
+          if-no-files-found: error
+          retention-days: 30
