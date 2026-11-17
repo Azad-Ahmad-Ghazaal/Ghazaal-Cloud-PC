@@ -1,0 +1,64 @@
+name: Audit Webtop container image
+
+on:
+  pull_request:
+    branches:
+      - main
+      - feat/oracle-cloud-desktop-foundation
+    paths:
+      - "compose.yaml"
+      - ".github/workflows/webtop-image-audit.yml"
+  push:
+    branches:
+      - feat/containerized-cloud-desktop
+    paths:
+      - "compose.yaml"
+      - ".github/workflows/webtop-image-audit.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: webtop-audit-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  image-audit:
+    name: Pull and scan Webtop image
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Read image reference
+        id: image
+        shell: bash
+        run: |
+          image="$(awk '/^[[:space:]]*image:/ {print $2; exit}' compose.yaml)"
+          if [[ -z "$image" ]]; then
+            echo "No image reference found in compose.yaml" >&2
+            exit 1
+          fi
+          echo "ref=$image" >> "$GITHUB_OUTPUT"
+          echo "Auditing image: $image"
+
+      - name: Verify image can be pulled
+        run: docker pull "${{ steps.image.outputs.ref }}"
+
+      - name: Export image for offline scanning
+        run: docker save "${{ steps.image.outputs.ref }}" --output "$RUNNER_TEMP/webtop-image.tar"
+
+      - name: Scan image for known HIGH and CRITICAL vulnerabilities
+        continue-on-error: true
+        run: |
+          docker run --rm \
+            -v "$RUNNER_TEMP:/scan" \
+            aquasec/trivy:0.76.2 \
+            image --input /scan/webtop-image.tar \
+            --scanners vuln \
+            --severity HIGH,CRITICAL \
+            --ignore-unfixed \
+            --exit-code 0 \
+            --format table
