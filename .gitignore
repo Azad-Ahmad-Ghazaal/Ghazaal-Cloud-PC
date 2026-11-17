@@ -7,3 +7,6 @@
 
 # Persistent desktop profile, browser sessions, and user files
 webtop-config/
+
+# GitHub Codespaces browser profile (contains cookies and signed-in sessions)
+.ghazaal-chromium-profile/
